@@ -52,6 +52,8 @@ static uint32_t msCounter = 0;
 		// Toggle the output
 		LPC_GPIO->NOT[0] = 1<<13;
 
+		printf("Pin Toggled\n");
+
 		// Clear counter
 		msCounter = 0;
 	}
@@ -71,13 +73,11 @@ int main(void)
 	// Enable GPIO Clock ( powers the GPIO periperal )
 	LPC_SYSCON->SYSAHBCLKCTRL |= (1<<6);
 
-	// Select GPIO Mode and disable analog mode, refer to User Manual - UM10462
+	// Select GPIO Mode and disable analog mode, refer to User Manual - UM10524
 	LPC_IOCON->TDO_PIO0_13 = (1 | 1<<7);
 
 	// Set the pin direction, set high for an output
 	LPC_GPIO->DIR[0] |= 1<<13;
-
-	printf("Hello World\n");
 
 	while(1)
 	{

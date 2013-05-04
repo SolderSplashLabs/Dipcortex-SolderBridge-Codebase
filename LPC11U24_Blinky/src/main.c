@@ -14,8 +14,9 @@
 
 	@section DESCRIPTION
 
-	Simple example that shows you how to : toggle an IO using a timed interrupt
-	and showing semihosting, letting you printf to the console.
+	Simple example that shows you how to :
+	- Toggle an IO using a timed interrupt
+	- Semihosting, letting you printf to the console.
 
 	To enable Semihosting when using a Jtag
 	- goto project properties
@@ -52,6 +53,8 @@ static uint32_t msCounter = 0;
 		// Toggle the output
 		LPC_GPIO->NOT[0] = 1<<13;
 
+		printf("Pin Toggled\n");
+
 		// Clear counter
 		msCounter = 0;
 	}
@@ -76,8 +79,6 @@ int main(void)
 
 	// Set the pin direction, set high for an output
 	LPC_GPIO->DIR[0] |= 1<<13;
-
-	printf("Hello World\n");
 
 	while(1)
 	{
