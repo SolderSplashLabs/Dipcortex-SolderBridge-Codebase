@@ -9,7 +9,7 @@ Toolchain
 LPCXpresso / Code_Red v5.1.2
 
 
-Lincese
+License
 -------------------------------
 
 See individual files for license info, mostly BSD
