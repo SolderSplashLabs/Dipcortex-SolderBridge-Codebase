@@ -1,8 +1,7 @@
 LPC11U24_Blinky - Toggling GPIO
 ===============================
 
-Super simple example that shows you how to use an intterrup and a single pin
-as a GPIO
+Super simple example that shows you how to use the systick interrupt to toggle a single GPIO PIN
 
 Toolchain
 -------------------------------
