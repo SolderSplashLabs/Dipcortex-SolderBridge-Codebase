@@ -49,9 +49,6 @@ void SysTick_Handler(void)
 	LPC_GPIO->NOT[0] = 1<<13;
 
 	printf("Pin Toggled\n");
-
-	// Clear counter
-	msCounter = 0;
 }
 
 
