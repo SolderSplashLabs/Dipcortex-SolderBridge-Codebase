@@ -45,19 +45,13 @@
 /**************************************************************************/
 void SysTick_Handler(void)
 {
-static uint32_t msCounter = 0;
+	// Toggle the output
+	LPC_GPIO->NOT[0] = 1<<13;
 
-	msCounter ++;
-	if ( msCounter > 1000 )
-	{
-		// Toggle the output
-		LPC_GPIO->NOT[0] = 1<<13;
+	printf("Pin Toggled\n");
 
-		printf("Pin Toggled\n");
-
-		// Clear counter
-		msCounter = 0;
-	}
+	// Clear counter
+	msCounter = 0;
 }
 
 
@@ -68,10 +62,10 @@ static uint32_t msCounter = 0;
 /**************************************************************************/
 int main(void)
 {
-	// Set up the System Tick for a 1ms interrupt
-	SysTick_Config(SystemCoreClock / 1000);
+	// Set up the System Tick for a 500ms interrupt
+	SysTick_Config(SystemCoreClock / 2);
 	
-	// Enable GPIO Clock ( powers the GPIO periperal )
+	// Enable GPIO Clock ( powers the GPIO peripheral )
 	LPC_SYSCON->SYSAHBCLKCTRL |= (1<<6);
 
 	// Select GPIO Mode and disable analog mode, refer to User Manual - UM10462
