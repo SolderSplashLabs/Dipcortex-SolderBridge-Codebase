@@ -52,7 +52,7 @@
 			will record a press on a high to low transition
 */
 // -------------------------------------------------------------------------------------------
-void Buttons_Task ( void )
+void Buttons_Task ( uint32_t msCallRate )
 {
 	uint8_t i = 0;
 	uint8_t mask = 1;
@@ -98,7 +98,7 @@ void Buttons_Task ( void )
 			{
 				if (ButtonHeldCnt[i] < BUTTON_HELD_MS)
 				{
-					ButtonHeldCnt[i] ++;
+					ButtonHeldCnt[i] += msCallRate;
 					/*
 					if (ButtonHeldCnt[i] == BUTTON_PRESSED_MS)
 					{

@@ -81,6 +81,7 @@ Common symbol       size              file
 _extra              0x4               c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(initio.o)
 ButtonsPressed      0x1               ./src/ButtonCon.o
 ButtonsPrevState    0x1               ./src/ButtonCon.o
+DimmingOutputs      0x30              ./src/main.o
 __heaps             0x4               c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(__init_alloc.o)
 __end_of_heap       0x4               c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(__init_alloc.o)
 ButtonsHeld         0x1               ./src/ButtonCon.o
@@ -91,15 +92,17 @@ Discarded input sections
  .text          0x00000000        0x0 ./src/ButtonCon.o
  .data          0x00000000        0x0 ./src/ButtonCon.o
  .bss           0x00000000        0x0 ./src/ButtonCon.o
- .text.Buttons_ActionPressed
-                0x00000000       0x14 ./src/ButtonCon.o
- .text.Buttons_GetPressed
-                0x00000000       0x1c ./src/ButtonCon.o
- .text.Buttons_GetHeld
+ .text.Buttons_GetPrevState
                 0x00000000       0x1c ./src/ButtonCon.o
  .text          0x00000000        0x0 ./src/PwmControl.o
  .data          0x00000000        0x0 ./src/PwmControl.o
  .bss           0x00000000        0x0 ./src/PwmControl.o
+ .text.Pwm_DutyIncrease
+                0x00000000       0x9c ./src/PwmControl.o
+ .text.Pwm_DutyDecrease
+                0x00000000       0x9c ./src/PwmControl.o
+ .text.Pwm_GetDuty
+                0x00000000       0x34 ./src/PwmControl.o
  .text          0x00000000        0x0 ./src/SolderSplashLpc.o
  .data          0x00000000        0x0 ./src/SolderSplashLpc.o
  .bss           0x00000000        0x0 ./src/SolderSplashLpc.o
@@ -109,6 +112,15 @@ Discarded input sections
  .text          0x00000000        0x0 ./src/main.o
  .data          0x00000000        0x0 ./src/main.o
  .bss           0x00000000        0x0 ./src/main.o
+ .rodata.DIM_LEVELS
+                0x00000000       0x10 ./src/main.o
+ .text.SetDimLevels
+                0x00000000      0x134 ./src/main.o
+ .text.Dimmer   0x00000000      0x140 ./src/main.o
+ .data.bottomOutput.4269
+                0x00000000        0x2 ./src/main.o
+ .data.topOutput.4270
+                0x00000000        0x2 ./src/main.o
  .text          0x00000000        0x0 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
  .data          0x00000000        0x0 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
  .bss           0x00000000        0x0 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
@@ -299,7 +311,7 @@ END GROUP
                 0x10002000                __top_RamLoc8 = 0x10002000
                 0x20004800                __top_RamUsb2 = 0x20004800
 
-.text           0x00000000     0x1268
+.text           0x00000000     0x1420
  FILL mask 0xff
  *(.isr_vector)
  .isr_vector    0x00000000       0xc0 ./src/cr_startup_lpc11u.o
@@ -307,16 +319,16 @@ END GROUP
                 0x000000c0                . = ALIGN (0x4)
                 0x000000c0                __section_table_start = .
                 0x000000c0                __data_section_table = .
-                0x000000c0        0x4 LONG 0x1268 LOADADDR (.data)
+                0x000000c0        0x4 LONG 0x1420 LOADADDR (.data)
                 0x000000c4        0x4 LONG 0x10000000 ADDR (.data)
-                0x000000c8        0x4 LONG 0x38 SIZEOF (.data)
-                0x000000cc        0x4 LONG 0x1268 LOADADDR (.data_RAM2)
+                0x000000c8        0x4 LONG 0x4c SIZEOF (.data)
+                0x000000cc        0x4 LONG 0x1420 LOADADDR (.data_RAM2)
                 0x000000d0        0x4 LONG 0x20004000 ADDR (.data_RAM2)
                 0x000000d4        0x4 LONG 0x0 SIZEOF (.data_RAM2)
                 0x000000d8                __data_section_table_end = .
                 0x000000d8                __bss_section_table = .
-                0x000000d8        0x4 LONG 0x10000038 ADDR (.bss)
-                0x000000dc        0x4 LONG 0x164 SIZEOF (.bss)
+                0x000000d8        0x4 LONG 0x1000004c ADDR (.bss)
+                0x000000dc        0x4 LONG 0x194 SIZEOF (.bss)
                 0x000000e0        0x4 LONG 0x20004000 ADDR (.bss_RAM2)
                 0x000000e4        0x4 LONG 0x0 SIZEOF (.bss_RAM2)
                 0x000000e8                __bss_section_table_end = .
@@ -358,162 +370,168 @@ END GROUP
                 0x00000164                GINT1_IRQHandler
  *(.text*)
  .text.Buttons_Task
-                0x00000168      0x16c ./src/ButtonCon.o
+                0x00000168      0x1bc ./src/ButtonCon.o
                 0x00000168                Buttons_Task
- .text.Buttons_GetPrevState
-                0x000002d4       0x1c ./src/ButtonCon.o
-                0x000002d4                Buttons_GetPrevState
+ .text.Buttons_ActionPressed
+                0x00000324       0x14 ./src/ButtonCon.o
+                0x00000324                Buttons_ActionPressed
+ .text.Buttons_GetPressed
+                0x00000338       0x1c ./src/ButtonCon.o
+                0x00000338                Buttons_GetPressed
+ .text.Buttons_GetHeld
+                0x00000354       0x1c ./src/ButtonCon.o
+                0x00000354                Buttons_GetHeld
  .text.Buttons_Init
-                0x000002f0       0xb0 ./src/ButtonCon.o
-                0x000002f0                Buttons_Init
+                0x00000370       0xb0 ./src/ButtonCon.o
+                0x00000370                Buttons_Init
  .text.NVIC_EnableIRQ
-                0x000003a0       0x2c ./src/PwmControl.o
+                0x00000420       0x2c ./src/PwmControl.o
  .text.Pwm_Init
-                0x000003cc       0xe0 ./src/PwmControl.o
-                0x000003cc                Pwm_Init
+                0x0000044c       0xe0 ./src/PwmControl.o
+                0x0000044c                Pwm_Init
  .text.Pwm_SetDuty
-                0x000004ac       0x90 ./src/PwmControl.o
-                0x000004ac                Pwm_SetDuty
+                0x0000052c       0x90 ./src/PwmControl.o
+                0x0000052c                Pwm_SetDuty
+ .text.Pwm_DutyStep
+                0x000005bc       0xd0 ./src/PwmControl.o
+                0x000005bc                Pwm_DutyStep
  .text.TIMER32_1_IRQHandler
-                0x0000053c       0x4c ./src/PwmControl.o
-                0x0000053c                TIMER32_1_IRQHandler
- .text.Pwm_On   0x00000588       0x24 ./src/PwmControl.o
-                0x00000588                Pwm_On
+                0x0000068c       0x4c ./src/PwmControl.o
+                0x0000068c                TIMER32_1_IRQHandler
+ .text.Pwm_On   0x000006d8       0x24 ./src/PwmControl.o
+                0x000006d8                Pwm_On
  .text.LpcLowPowerIoInit
-                0x000005ac      0x190 ./src/SolderSplashLpc.o
-                0x000005ac                LpcLowPowerIoInit
+                0x000006fc      0x190 ./src/SolderSplashLpc.o
+                0x000006fc                LpcLowPowerIoInit
  .text.NVIC_SetPriority
-                0x0000073c       0xe0 ./src/main.o
+                0x0000088c       0xe0 ./src/main.o
  .text.SysTick_Config
-                0x0000081c       0x4c ./src/main.o
+                0x0000096c       0x4c ./src/main.o
  .text.SysTick_Handler
-                0x00000868       0x14 ./src/main.o
-                0x00000868                SysTick_Handler
- .text.SetDimLevels
-                0x0000087c      0x134 ./src/main.o
-                0x0000087c                SetDimLevels
- .text.main     0x000009b0       0x74 ./src/main.o
-                0x000009b0                main
+                0x000009b8       0x14 ./src/main.o
+                0x000009b8                SysTick_Handler
+ .text.UpDownStepper
+                0x000009cc      0x170 ./src/main.o
+                0x000009cc                UpDownStepper
+ .text.main     0x00000b3c       0xb0 ./src/main.o
+                0x00000b3c                main
  .text.SystemInit
-                0x00000a24       0xd4 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
-                0x00000a24                SystemInit
- .text.__main   0x00000af8       0x12 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(_cr__main.o)
-                0x00000af8                __main
- *fill*         0x00000b0a        0x2 00
- .text._initio  0x00000b0c       0xa0 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(initio.o)
-                0x00000b0c                _initio
- .text.setvbuf  0x00000bac       0x48 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(setvbuf.o)
-                0x00000bac                setvbuf
- .text.memset   0x00000bf4        0x8 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(memset.o)
-                0x00000bf4                memset
+                0x00000bec       0xd4 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+                0x00000bec                SystemInit
+ .text.__main   0x00000cc0       0x12 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(_cr__main.o)
+                0x00000cc0                __main
+ *fill*         0x00000cd2        0x2 00
+ .text._initio  0x00000cd4       0xa0 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(initio.o)
+                0x00000cd4                _initio
+ .text.setvbuf  0x00000d74       0x48 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(setvbuf.o)
+                0x00000d74                setvbuf
+ .text.memset   0x00000dbc        0x8 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(memset.o)
+                0x00000dbc                memset
  .text._deferredlazyseek
-                0x00000bfc       0x44 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_deferredlazyseek.o)
-                0x00000bfc                _deferredlazyseek
- .text._fdopen  0x00000c40       0x78 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_fdopen.o)
-                0x00000c40                _fdopen
- .text._fflush  0x00000cb8       0x60 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_fflush.o)
-                0x00000cb8                _fflush
+                0x00000dc4       0x44 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_deferredlazyseek.o)
+                0x00000dc4                _deferredlazyseek
+ .text._fdopen  0x00000e08       0x78 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_fdopen.o)
+                0x00000e08                _fdopen
+ .text._fflush  0x00000e80       0x60 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_fflush.o)
+                0x00000e80                _fflush
  .text._Cwritebuf
-                0x00000d18       0x6c c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_writebuf.o)
-                0x00000d18                _Cwritebuf
- .text.malloc   0x00000d84       0xbc c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(alloc.o)
-                0x00000d84                malloc
- .text.free     0x00000e40        0xa c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(alloc.o)
-                0x00000e40                free
- *fill*         0x00000e4a        0x2 00
+                0x00000ee0       0x6c c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_writebuf.o)
+                0x00000ee0                _Cwritebuf
+ .text.malloc   0x00000f4c       0xbc c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(alloc.o)
+                0x00000f4c                malloc
+ .text.free     0x00001008        0xa c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(alloc.o)
+                0x00001008                free
+ *fill*         0x00001012        0x2 00
  .text._Csys_alloc
-                0x00000e4c       0x20 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(alloc.o)
-                0x00000e4c                _Csys_alloc
- .text.fclose   0x00000e6c       0x70 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(fclose.o)
-                0x00000e6c                fclose
- .text.fflush   0x00000edc       0x38 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(fflush.o)
-                0x00000edc                fflush
- .text.fseek    0x00000f14       0xf0 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(fseek.o)
-                0x00000f14                fseek
- .text.ftell    0x00001004       0x4c c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(ftell.o)
-                0x00001004                ftell
- .text.remove   0x00001050       0x12 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(remove.o)
-                0x00001050                remove
- *fill*         0x00001062        0x2 00
- .text.strlen   0x00001064       0x58 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(strlen.o)
-                0x00001064                strlen
+                0x00001014       0x20 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(alloc.o)
+                0x00001014                _Csys_alloc
+ .text.fclose   0x00001034       0x70 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(fclose.o)
+                0x00001034                fclose
+ .text.fflush   0x000010a4       0x38 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(fflush.o)
+                0x000010a4                fflush
+ .text.fseek    0x000010dc       0xf0 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(fseek.o)
+                0x000010dc                fseek
+ .text.ftell    0x000011cc       0x4c c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(ftell.o)
+                0x000011cc                ftell
+ .text.remove   0x00001218       0x12 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(remove.o)
+                0x00001218                remove
+ *fill*         0x0000122a        0x2 00
+ .text.strlen   0x0000122c       0x58 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(strlen.o)
+                0x0000122c                strlen
  .text._do_fflush
-                0x000010bc       0x48 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_do_fflush.o)
-                0x000010bc                _do_fflush
+                0x00001284       0x48 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(_do_fflush.o)
+                0x00001284                _do_fflush
  .text.__aeabi_division_uidivmod
-                0x00001104       0x72 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/armv6-m\libcr_eabihelpers.a(division.o)
-                0x00001104                __aeabi_uidivmod
-                0x00001104                __aeabi_uidiv
+                0x000012cc       0x72 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/armv6-m\libcr_eabihelpers.a(division.o)
+                0x000012cc                __aeabi_uidivmod
+                0x000012cc                __aeabi_uidiv
  .text.__aeabi_division_idiv0
-                0x00001176        0x2 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/armv6-m\libcr_eabihelpers.a(division.o)
-                0x00001176                __aeabi_idiv0
+                0x0000133e        0x2 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/armv6-m\libcr_eabihelpers.a(division.o)
+                0x0000133e                __aeabi_idiv0
  .text.__aeabi_memset_lowlevel
-                0x00001178       0x2a c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/armv6-m\libcr_eabihelpers.a(memcpy.o)
-                0x00001178                __aeabi_lowlevel_memset
+                0x00001340       0x2a c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/armv6-m\libcr_eabihelpers.a(memcpy.o)
+                0x00001340                __aeabi_lowlevel_memset
  .text.__sys_appexit
-                0x000011a2        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_appexit.o)
-                0x000011a2                __sys_appexit
-                0x000011a2                __exit
+                0x0000136a        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_appexit.o)
+                0x0000136a                __sys_appexit
+                0x0000136a                __exit
  .text.__sys_close
-                0x000011a6        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_close.o)
-                0x000011a6                __sys_close
+                0x0000136e        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_close.o)
+                0x0000136e                __sys_close
  .text.__sys_flen
-                0x000011ac        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_flen.o)
-                0x000011ac                __sys_flen
+                0x00001374        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_flen.o)
+                0x00001374                __sys_flen
  .text.__sys_istty
-                0x000011b2        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_istty.o)
-                0x000011b2                __sys_istty
+                0x0000137a        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_istty.o)
+                0x0000137a                __sys_istty
  .text.__sys_remove
-                0x000011b8        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_remove.o)
-                0x000011b8                __sys_remove
+                0x00001380        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_remove.o)
+                0x00001380                __sys_remove
  .text.__sys_seek
-                0x000011be        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_seek.o)
-                0x000011be                __sys_seek
+                0x00001386        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_seek.o)
+                0x00001386                __sys_seek
  .text.__sys_tmpnam
-                0x000011c4        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_tmpnam.o)
-                0x000011c4                __sys_tmpnam
+                0x0000138c        0x6 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_tmpnam.o)
+                0x0000138c                __sys_tmpnam
  .text.__sys_write
-                0x000011ca        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_write.o)
-                0x000011ca                __sys_write
-                0x000011ca                __write
- *fill*         0x000011ce        0x2 00
- .text._sbrk    0x000011d0       0x40 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(_cr_sbrk.o)
-                0x000011d0                _sbrk
+                0x00001392        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(__sys_write.o)
+                0x00001392                __sys_write
+                0x00001392                __write
+ *fill*         0x00001396        0x2 00
+ .text._sbrk    0x00001398       0x40 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(_cr_sbrk.o)
+                0x00001398                _sbrk
  .text.__check_heap_overflow
-                0x00001210       0x2c c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(_cr_check_heap.o)
-                0x00001210                __check_heap_overflow
+                0x000013d8       0x2c c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(_cr_check_heap.o)
+                0x000013d8                __check_heap_overflow
  *(.rodata .rodata.*)
- .rodata.DIM_LEVELS
-                0x0000123c       0x10 ./src/main.o
-                0x0000123c                DIM_LEVELS
  .rodata.str1.1
-                0x0000124c        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(initio.o)
+                0x00001404        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(initio.o)
  .rodata.str1.1
-                0x00001250       0x18 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(alloc.o)
-                0x00001268                . = ALIGN (0x4)
+                0x00001408       0x18 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(alloc.o)
+                0x00001420                . = ALIGN (0x4)
 
-.glue_7         0x00001268        0x0
+.glue_7         0x00001420        0x0
  .glue_7        0x00000000        0x0 linker stubs
 
-.glue_7t        0x00001268        0x0
+.glue_7t        0x00001420        0x0
  .glue_7t       0x00000000        0x0 linker stubs
 
-.vfp11_veneer   0x00001268        0x0
+.vfp11_veneer   0x00001420        0x0
  .vfp11_veneer  0x00000000        0x0 linker stubs
 
-.v4_bx          0x00001268        0x0
+.v4_bx          0x00001420        0x0
  .v4_bx         0x00000000        0x0 linker stubs
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x00001268                __exidx_start = .
+                0x00001420                __exidx_start = .
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-                0x00001268                __exidx_end = .
-                0x00001268                _etext = .
+                0x00001420                __exidx_end = .
+                0x00001420                _etext = .
 
-.data_RAM2      0x20004000        0x0 load address 0x00001268
+.data_RAM2      0x20004000        0x0 load address 0x00001420
  FILL mask 0xff
  *(.data.$RAM2*)
  *(.data.$RamUsb2*)
@@ -525,151 +543,152 @@ END GROUP
                 0x10000000                . = ALIGN (0x4)
                 0x10000000                _end_uninit_RESERVED = .
 
-.data           0x10000000       0x38 load address 0x00001268
+.data           0x10000000       0x4c load address 0x00001420
  FILL mask 0xff
                 0x10000000                _data = .
  *(vtable)
  *(.data*)
  .data.Buttons  0x10000000       0x30 ./src/ButtonCon.o
                 0x10000000                Buttons
- .data.bottomOutput.4251
-                0x10000030        0x2 ./src/main.o
- .data.topOutput.4252
-                0x10000032        0x2 ./src/main.o
+ .data.Pwm_Duty
+                0x10000030       0x18 ./src/PwmControl.o
+                0x10000030                Pwm_Duty
  .data.SystemCoreClock
-                0x10000034        0x4 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
-                0x10000034                SystemCoreClock
-                0x10000038                . = ALIGN (0x4)
-                0x10000038                _edata = .
+                0x10000048        0x4 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+                0x10000048                SystemCoreClock
+                0x1000004c                . = ALIGN (0x4)
+                0x1000004c                _edata = .
 
 .bss_RAM2       0x20004000        0x0
  *(.bss.$RAM2*)
  *(.bss.$RamUsb2*)
                 0x20004000                . = ALIGN (0x4)
 
-.bss            0x10000038      0x164
-                0x10000038                _bss = .
+.bss            0x1000004c      0x194
+                0x1000004c                _bss = .
  *(.bss*)
  .bss.ButtonHeldCnt
-                0x10000038        0xc ./src/ButtonCon.o
-                0x10000038                ButtonHeldCnt
+                0x1000004c        0xc ./src/ButtonCon.o
+                0x1000004c                ButtonHeldCnt
  .bss.actionButtons
-                0x10000044        0x1 ./src/main.o
-                0x10000044                actionButtons
- *fill*         0x10000045        0x3 00
- .bss.errno     0x10000048        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(errno.o)
-                0x10000048                errno
+                0x10000058        0x1 ./src/main.o
+                0x10000058                actionButtons
+ *fill*         0x10000059        0x3 00
+ .bss.errno     0x1000005c        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(errno.o)
+                0x1000005c                errno
  *(COMMON)
- COMMON         0x1000004c        0x3 ./src/ButtonCon.o
-                0x1000004c                ButtonsPressed
-                0x1000004d                ButtonsPrevState
-                0x1000004e                ButtonsHeld
- *fill*         0x1000004f        0x1 00
- COMMON         0x10000050        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(initio.o)
-                0x10000050                _extra
- COMMON         0x10000054      0x140 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(stdio.o)
-                0x10000054                __Ciob
- COMMON         0x10000194        0x8 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(__init_alloc.o)
-                0x10000194                __heaps
-                0x10000198                __end_of_heap
-                0x1000019c                . = ALIGN (0x4)
-                0x1000019c                _ebss = .
-                0x1000019c                PROVIDE (end, .)
+ COMMON         0x10000060        0x3 ./src/ButtonCon.o
+                0x10000060                ButtonsPressed
+                0x10000061                ButtonsPrevState
+                0x10000062                ButtonsHeld
+ *fill*         0x10000063        0x1 00
+ COMMON         0x10000064       0x30 ./src/main.o
+                0x10000064                DimmingOutputs
+ COMMON         0x10000094        0x4 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(initio.o)
+                0x10000094                _extra
+ COMMON         0x10000098      0x140 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(stdio.o)
+                0x10000098                __Ciob
+ COMMON         0x100001d8        0x8 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_c.a(__init_alloc.o)
+                0x100001d8                __heaps
+                0x100001dc                __end_of_heap
+                0x100001e0                . = ALIGN (0x4)
+                0x100001e0                _ebss = .
+                0x100001e0                PROVIDE (end, .)
 
 .noinit_RAM2    0x20004000        0x0
  *(.noinit.$RAM2*)
  *(.noinit.$RamUsb2*)
                 0x20004000                . = ALIGN (0x4)
 
-.noinit         0x1000019c        0x0
-                0x1000019c                _noinit = .
+.noinit         0x100001e0        0x0
+                0x100001e0                _noinit = .
  *(.noinit*)
-                0x1000019c                . = ALIGN (0x4)
-                0x1000019c                _end_noinit = .
-                0x1000019c                PROVIDE (_pvHeapStart, .)
+                0x100001e0                . = ALIGN (0x4)
+                0x100001e0                _end_noinit = .
+                0x100001e0                PROVIDE (_pvHeapStart, .)
                 0x10002000                PROVIDE (_vStackTop, (__top_RamLoc8 - 0x0))
 OUTPUT(SolderBridge_0-10v_Stepped.axf elf32-littlearm)
 
-.debug_info     0x00000000     0x2eef
- .debug_info    0x00000000      0x872 ./src/ButtonCon.o
- .debug_info    0x00000872      0xf1f ./src/PwmControl.o
- .debug_info    0x00001791      0x40f ./src/SolderSplashLpc.o
- .debug_info    0x00001ba0      0x296 ./src/cr_startup_lpc11u.o
- .debug_info    0x00001e36      0xae5 ./src/main.o
- .debug_info    0x0000291b      0x5d4 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+.debug_info     0x00000000     0x31a6
+ .debug_info    0x00000000      0x880 ./src/ButtonCon.o
+ .debug_info    0x00000880     0x107f ./src/PwmControl.o
+ .debug_info    0x000018ff      0x40f ./src/SolderSplashLpc.o
+ .debug_info    0x00001d0e      0x296 ./src/cr_startup_lpc11u.o
+ .debug_info    0x00001fa4      0xc2e ./src/main.o
+ .debug_info    0x00002bd2      0x5d4 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
 
-.debug_abbrev   0x00000000      0x7a4
+.debug_abbrev   0x00000000      0x85f
  .debug_abbrev  0x00000000      0x191 ./src/ButtonCon.o
- .debug_abbrev  0x00000191      0x1a7 ./src/PwmControl.o
- .debug_abbrev  0x00000338       0x80 ./src/SolderSplashLpc.o
- .debug_abbrev  0x000003b8      0x116 ./src/cr_startup_lpc11u.o
- .debug_abbrev  0x000004ce      0x1dd ./src/main.o
- .debug_abbrev  0x000006ab       0xf9 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+ .debug_abbrev  0x00000191      0x21e ./src/PwmControl.o
+ .debug_abbrev  0x000003af       0x80 ./src/SolderSplashLpc.o
+ .debug_abbrev  0x0000042f      0x116 ./src/cr_startup_lpc11u.o
+ .debug_abbrev  0x00000545      0x221 ./src/main.o
+ .debug_abbrev  0x00000766       0xf9 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
 
-.debug_loc      0x00000000      0x67d
+.debug_loc      0x00000000      0x7d9
  .debug_loc     0x00000000      0x144 ./src/ButtonCon.o
- .debug_loc     0x00000144       0xf4 ./src/PwmControl.o
- .debug_loc     0x00000238       0x2c ./src/SolderSplashLpc.o
- .debug_loc     0x00000264      0x28f ./src/cr_startup_lpc11u.o
- .debug_loc     0x000004f3      0x100 ./src/main.o
- .debug_loc     0x000005f3       0x8a Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+ .debug_loc     0x00000144      0x1d4 ./src/PwmControl.o
+ .debug_loc     0x00000318       0x2c ./src/SolderSplashLpc.o
+ .debug_loc     0x00000344      0x28f ./src/cr_startup_lpc11u.o
+ .debug_loc     0x000005d3      0x17c ./src/main.o
+ .debug_loc     0x0000074f       0x8a Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
 
-.debug_aranges  0x00000000      0x170
+.debug_aranges  0x00000000      0x1a0
  .debug_aranges
                 0x00000000       0x48 ./src/ButtonCon.o
  .debug_aranges
-                0x00000048       0x40 ./src/PwmControl.o
+                0x00000048       0x60 ./src/PwmControl.o
  .debug_aranges
-                0x00000088       0x20 ./src/SolderSplashLpc.o
+                0x000000a8       0x20 ./src/SolderSplashLpc.o
  .debug_aranges
-                0x000000a8       0x60 ./src/cr_startup_lpc11u.o
+                0x000000c8       0x60 ./src/cr_startup_lpc11u.o
  .debug_aranges
-                0x00000108       0x40 ./src/main.o
+                0x00000128       0x50 ./src/main.o
  .debug_aranges
-                0x00000148       0x28 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+                0x00000178       0x28 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
 
-.debug_ranges   0x00000000      0x110
+.debug_ranges   0x00000000      0x140
  .debug_ranges  0x00000000       0x38 ./src/ButtonCon.o
- .debug_ranges  0x00000038       0x30 ./src/PwmControl.o
- .debug_ranges  0x00000068       0x10 ./src/SolderSplashLpc.o
- .debug_ranges  0x00000078       0x50 ./src/cr_startup_lpc11u.o
- .debug_ranges  0x000000c8       0x30 ./src/main.o
- .debug_ranges  0x000000f8       0x18 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+ .debug_ranges  0x00000038       0x50 ./src/PwmControl.o
+ .debug_ranges  0x00000088       0x10 ./src/SolderSplashLpc.o
+ .debug_ranges  0x00000098       0x50 ./src/cr_startup_lpc11u.o
+ .debug_ranges  0x000000e8       0x40 ./src/main.o
+ .debug_ranges  0x00000128       0x18 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
 
-.debug_line     0x00000000     0x1b2e
- .debug_line    0x00000000      0x4ee ./src/ButtonCon.o
- .debug_line    0x000004ee      0x4d0 ./src/PwmControl.o
- .debug_line    0x000009be      0x486 ./src/SolderSplashLpc.o
- .debug_line    0x00000e44      0x3fe ./src/cr_startup_lpc11u.o
- .debug_line    0x00001242      0x504 ./src/main.o
- .debug_line    0x00001746      0x3e8 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+.debug_line     0x00000000     0x1c52
+ .debug_line    0x00000000      0x4ef ./src/ButtonCon.o
+ .debug_line    0x000004ef      0x55b ./src/PwmControl.o
+ .debug_line    0x00000a4a      0x486 ./src/SolderSplashLpc.o
+ .debug_line    0x00000ed0      0x3fe ./src/cr_startup_lpc11u.o
+ .debug_line    0x000012ce      0x59c ./src/main.o
+ .debug_line    0x0000186a      0x3e8 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
 
-.debug_macinfo  0x00000000    0x214e9
+.debug_macinfo  0x00000000    0x21547
  .debug_macinfo
-                0x00000000     0x5b7f ./src/ButtonCon.o
+                0x00000000     0x5b80 ./src/ButtonCon.o
  .debug_macinfo
-                0x00005b7f     0x5b64 ./src/PwmControl.o
+                0x00005b80     0x5b7f ./src/PwmControl.o
  .debug_macinfo
-                0x0000b6e3     0x584b ./src/SolderSplashLpc.o
+                0x0000b6ff     0x584b ./src/SolderSplashLpc.o
  .debug_macinfo
-                0x00010f2e     0x522b ./src/cr_startup_lpc11u.o
+                0x00010f4a     0x522b ./src/cr_startup_lpc11u.o
  .debug_macinfo
-                0x00016159     0x5ebe ./src/main.o
+                0x00016175     0x5f00 ./src/main.o
  .debug_macinfo
-                0x0001c017     0x54d2 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+                0x0001c075     0x54d2 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
 
-.debug_str      0x00000000      0xbdb
- .debug_str     0x00000000      0x42b ./src/ButtonCon.o
-                                0x45a (size before relaxing)
- .debug_str     0x0000042b      0x4c8 ./src/PwmControl.o
-                                0x829 (size before relaxing)
- .debug_str     0x000008f3       0x2b ./src/SolderSplashLpc.o
+.debug_str      0x00000000      0xcc6
+ .debug_str     0x00000000      0x436 ./src/ButtonCon.o
+                                0x465 (size before relaxing)
+ .debug_str     0x00000436      0x536 ./src/PwmControl.o
+                                0x89c (size before relaxing)
+ .debug_str     0x0000096c       0x2b ./src/SolderSplashLpc.o
                                 0x317 (size before relaxing)
- .debug_str     0x0000091e      0x12f ./src/cr_startup_lpc11u.o
+ .debug_str     0x00000997      0x12f ./src/cr_startup_lpc11u.o
                                 0x23a (size before relaxing)
- .debug_str     0x00000a4d      0x10a ./src/main.o
-                                0x6c9 (size before relaxing)
- .debug_str     0x00000b57       0x84 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+ .debug_str     0x00000ac6      0x17c ./src/main.o
+                                0x74b (size before relaxing)
+ .debug_str     0x00000c42       0x84 Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
                                 0x3c3 (size before relaxing)
 
 .comment        0x00000000       0xe0
@@ -803,10 +822,10 @@ OUTPUT(SolderBridge_0-10v_Stepped.axf elf32-littlearm)
  .ARM.attributes
                 0x000007b9       0x31 c:/nxp/lpcxpresso_5.1.2_2065/lpcxpresso/tools/bin/../lib/gcc/arm-none-eabi/4.6.2/../../../../arm-none-eabi/lib/armv6-m\libcr_nohost.a(_cr_check_heap.o)
 
-.debug_frame    0x00000000      0x384
+.debug_frame    0x00000000      0x448
  .debug_frame   0x00000000       0xd0 ./src/ButtonCon.o
- .debug_frame   0x000000d0       0xa4 ./src/PwmControl.o
- .debug_frame   0x00000174       0x2c ./src/SolderSplashLpc.o
- .debug_frame   0x000001a0       0xec ./src/cr_startup_lpc11u.o
- .debug_frame   0x0000028c       0xac ./src/main.o
- .debug_frame   0x00000338       0x4c Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)
+ .debug_frame   0x000000d0      0x124 ./src/PwmControl.o
+ .debug_frame   0x000001f4       0x2c ./src/SolderSplashLpc.o
+ .debug_frame   0x00000220       0xec ./src/cr_startup_lpc11u.o
+ .debug_frame   0x0000030c       0xf0 ./src/main.o
+ .debug_frame   0x000003fc       0x4c Z:\SolderSplash\Software\example1\CMSISv2p00_LPC11Uxx\Debug\libCMSISv2p00_LPC11Uxx.a(system_LPC11Uxx.o)

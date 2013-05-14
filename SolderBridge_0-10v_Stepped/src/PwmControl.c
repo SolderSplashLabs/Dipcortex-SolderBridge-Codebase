@@ -47,6 +47,8 @@
 */
 
 #include "SolderSplashLpc.h"
+
+#define _PWM_CON_
 #include "PwmControl.h"
 
 // -------------------------------------------------------------------------------------------
@@ -145,6 +147,100 @@ void Pwm_SetDuty ( uint8_t pwmMask, uint32_t duty )
 	}
 }
 
+// -------------------------------------------------------------------------------------------
+/*!
+    @brief Increase the duty of the masked PWM channels
+*/
+// -------------------------------------------------------------------------------------------
+void Pwm_DutyIncrease ( uint8_t pwmMask, uint32_t maxDuty )
+{
+uint8_t i = 0;
+uint8_t mask = 0x01;
+
+	for (i=0; i<PWM_NO_OF; i++)
+	{
+		if ( pwmMask & mask )
+		{
+			if ( *(Pwm_Duty[i]) < maxDuty )
+			{
+				*Pwm_Duty[i] = *Pwm_Duty[i] + 1;
+			}
+		}
+		mask <<= 1;
+	}
+}
+
+// -------------------------------------------------------------------------------------------
+/*!
+    @brief Decrease the duty of the masked PWM channels
+*/
+// -------------------------------------------------------------------------------------------
+void Pwm_DutyDecrease ( uint8_t pwmMask, uint32_t minDuty )
+{
+uint8_t i = 0;
+uint8_t mask = 0x01;
+
+	for (i=0; i<PWM_NO_OF; i++)
+	{
+		if ( pwmMask & mask )
+		{
+			if ( *(Pwm_Duty[i]) > minDuty )
+			{
+				*Pwm_Duty[i] = *Pwm_Duty[i] - 1;
+			}
+		}
+		mask <<= 1;
+	}
+}
+
+// -------------------------------------------------------------------------------------------
+/*!
+    @brief Pwm_DutyStep - Move towards the target duty 1 count at a time
+    // TODO : Allow a varible step size later
+*/
+// -------------------------------------------------------------------------------------------
+void Pwm_DutyStep ( uint8_t pwmMask, uint32_t targetDuty )
+{
+uint8_t i = 0;
+uint8_t mask = 0x01;
+
+	for (i=0; i<PWM_NO_OF; i++)
+	{
+		if ( pwmMask & mask )
+		{
+			if ( *(Pwm_Duty[i]) < targetDuty )
+			{
+				*(Pwm_Duty[i]) = *(Pwm_Duty[i]) + 1;
+			}
+			else if ( *(Pwm_Duty[i]) > targetDuty )
+			{
+				*(Pwm_Duty[i]) = *(Pwm_Duty[i]) - 1;
+			}
+			else
+			{
+				// it's where it needs to be
+			}
+		}
+		mask <<= 1;
+	}
+}
+
+// -------------------------------------------------------------------------------------------
+/*!
+    @brief Return the duty from the selected channel
+*/
+// -------------------------------------------------------------------------------------------
+uint32_t Pwm_GetDuty ( uint8_t channel )
+{
+uint32_t result = 0;
+
+	if ( channel < PWM_NO_OF )
+	{
+		result = *Pwm_Duty[channel];
+	}
+
+	return result;
+}
 
 // -------------------------------------------------------------------------------------------
 /*!

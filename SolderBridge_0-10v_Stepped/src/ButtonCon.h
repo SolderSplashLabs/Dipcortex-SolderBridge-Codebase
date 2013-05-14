@@ -48,7 +48,7 @@
 */
 
 #define BUTTON_NO			6			// Number of buttons
-#define BUTTON_HELD_MS		50			// Button Held Milliseconds
+#define BUTTON_HELD_MS		500			// Button Held Milliseconds
 #define BUTTON_PRESSED_MS	5			// Button Pressed Milliseconds
 
 typedef struct BUTTONS
@@ -114,7 +114,7 @@ void Buttons_GetPressed ( uint8_t *pressed );
 void Buttons_GetHeld ( uint8_t *pressed );
 void Buttons_GetPrevState ( uint8_t *buttonsState );
 void Buttons_Init ( void );
-void Buttons_Task ( void );
+void Buttons_Task ( uint32_t msCallRate );
 
 #ifdef _BUTTONS_
 

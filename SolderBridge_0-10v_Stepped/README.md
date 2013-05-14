@@ -1,4 +1,4 @@
-SolderBridge_0-10v_Stepped - Stepped output
+SolderBridge 0-10v Stepped - Stepped output
 ===========================================
 
 Example project showing you how to create a stepped voltage output using the 0-10v SolderBridge

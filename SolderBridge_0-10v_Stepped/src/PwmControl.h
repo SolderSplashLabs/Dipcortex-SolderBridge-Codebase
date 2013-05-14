@@ -1,8 +1,10 @@
 
-#define PWM_DEFAULT_PERIOD			320			// 150KHz
+#define PWM_DEFAULT_PERIOD			320			// 150KHz - before the prescaler
 #define PWM_PRESCALE				30			// Clock Ticks are needed before incrementing the count register
-												// Gives us a 5Khz Timebase
+												// 30 Gives us a 5Khz Timebase
+												// 15 Gives us a 10Khz Timebase
 
+#define PWM_NO_OF					6			// How many channels of pwm do we have control of
 #define PWM_BIT_BANG_PWM5
 
 // CT32B1_MAT0
@@ -61,4 +63,14 @@
 void Pwm_Init ( void );
 void Pwm_SetDuty ( uint8_t pwmMask, uint32_t duty );
 void Pwm_On ( void );
+void Pwm_DutyIncrease ( uint8_t pwmMask, uint32_t maxDuty );
+void Pwm_DutyDecrease ( uint8_t pwmMask, uint32_t minDuty );
+uint32_t Pwm_GetDuty ( uint8_t channel );
+void Pwm_DutyStep ( uint8_t pwmMask, uint32_t targetDuty );
 
+#ifdef _PWM_CON_
+
+// PWM Duty control array
+volatile uint32_t* Pwm_Duty[PWM_NO_OF] = { PWM1_DUTY_REG, PWM2_DUTY_REG, PWM3_DUTY_REG, PWM4_DUTY_REG, PWM5_DUTY_REG ,PWM6_DUTY_REG };
+
+#endif

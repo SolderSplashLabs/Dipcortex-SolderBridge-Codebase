@@ -143,6 +143,149 @@ uint16_t topOutputTarget = 0;
 	Pwm_SetDuty(BIT5, topOutputTarget);
 }
 
+// ------------------------------------------------------------------------------------------------------------
+/*!
+    @brief Dimmer - Each input controls a single output, press and hold the input to dim up and dim down
+*/
+// ------------------------------------------------------------------------------------------------------------
+void Dimmer ( void )
+{
+uint8_t i = 0;
+uint8_t mask = 0x01;
+uint8_t buttonsHeld = 0;
+uint8_t buttonsPressed = 0;
+
+	Buttons_GetHeld(&buttonsHeld);
+	Buttons_GetPressed(&buttonsPressed);
+	Buttons_ActionPressed();
+
+	for (i=0; i<BUTTON_NO; i++)
+	{
+		if (buttonsHeld & mask)
+		{
+			if (! DimmingOutputs[i].hasStarted )
+			{
+				// We have just had our first held button
+				DimmingOutputs[i].hasStarted = true;
+
+				if ( DimmingOutputs[i].goingUp )
+				{
+					DimmingOutputs[i].goingUp = false;
+					DimmingOutputs[i].goingDown = true;
+				}
+				else
+				{
+					DimmingOutputs[i].goingUp = true;
+					DimmingOutputs[i].goingDown = false;
+				}
+			}
+
+			if ( DimmingOutputs[i].goingUp )
+			{
+				// Decreasing the pwm duty value increases the output voltage
+				Pwm_DutyDecrease(mask, MIN_DIM_DUTY);
+			}
+			else
+			{
+				// Increasing the pwm duty value Decreases the output voltage
+				Pwm_DutyIncrease(mask, MAX_DIM_DUTY);
+			}
+		}
+		else if (buttonsPressed & mask)
+		{
+			// a press has occurred on this input
+		}
+		else
+		{
+			DimmingOutputs[i].hasStarted = false;
+		}
+
+		// Next button
+		mask <<= 1;
+	}
+
+}
+
+// ------------------------------------------------------------------------------------------------------------
+/*!
+    @brief UpDownStepper - use inputs in pairs first adds to the output voltage, next takes away
+*/
+// ------------------------------------------------------------------------------------------------------------
+void UpDownStepper ( void )
+{
+uint8_t i = 0;
+uint8_t output = 0;
+uint8_t mask = 0x01;
+uint8_t buttonsHeld = 0;
+uint8_t buttonsPressed = 0;
+
+	Buttons_GetHeld(&buttonsHeld);
+	Buttons_GetPressed(&buttonsPressed);
+	Buttons_ActionPressed();
+
+	for (i=0; i<BUTTON_NO; i++)
+	{
+		if (buttonsHeld & mask)
+		{
+			// ignore
+		}
+		else if (buttonsPressed & mask)
+		{
+			// a press has occurred on this input, work out which output it affects
+			// 2 inputs control each output
+			output = i / 2;
+
+			// if this is an odd input bit0 is set
+			if ( i & 0x01 )
+			{
+				// we decrease the voltage by the step size if possible
+				// increasing the PWM decreases the voltage
+				DimmingOutputs[output].targetDuty += DIM_STEP;
+
+				// limit to the max
+				if ( DimmingOutputs[output].targetDuty > MAX_DIM_DUTY)
+				{
+					DimmingOutputs[output].targetDuty = MAX_DIM_DUTY;
+				}
+			}
+			else
+			{
+				// increase the voltage by the step size if possible
+				// decreasing the PWM increases the voltage
+
+				if ( DimmingOutputs[output].targetDuty >= DIM_STEP)
+				{
+					DimmingOutputs[output].targetDuty -= DIM_STEP;
+				}
+				else
+				{
+					DimmingOutputs[output].targetDuty = MIN_DIM_DUTY;
+				}
+			}
+		}
+		else
+		{
+			// nothing
+		}
+
+		// Update the duty of this output to move it towards the target
+		// It might already be there,
+
+
+		// Next button
+		mask <<= 1;
+	}
+
+	// Now loop around each out and step them closer to their targets
+	mask = 0x01;
+	for (i=0; i<PWM_NO_OF; i++)
+	{
+		Pwm_DutyStep(mask, DimmingOutputs[i].targetDuty);
+
+		mask <<= 1;
+	}
+}
+
 
 // ------------------------------------------------------------------------------------------------------------
 /*!
@@ -151,6 +294,8 @@ uint16_t topOutputTarget = 0;
 // ------------------------------------------------------------------------------------------------------------
 int main(void)
 {
+uint8_t i = 0;
+
 	// Set up the System Tick, 33.3ms tick gives us a 1v per second linear ramp
 	SysTick_Config(SystemCoreClock / 30);
 
@@ -165,15 +310,30 @@ int main(void)
 	LPC_IOCON->PIO0_23 = (1<<7 | 1<<10);
 	LPC_GPIO->DIR[0] |= (1 << 23);
 
+	// Initalise target duty, used in UpDownStepped Mode
+	for (i=0; i<PWM_NO_OF; i++)
+	{
+		DimmingOutputs[i].targetDuty = MAX_DIM_DUTY;
+	}
+
 	while(1)
 	{
 		// The System tick set
 		if ( actionButtons )
 		{
-			Buttons_Task();
-			//DimmingControl();
-			SetDimLevels();
 			actionButtons = false;
+
+			// Call the button module and tell it how often we are calling it
+			Buttons_Task(33);
+
+			// Use inputs as dip switches to select the voltage in large steps
+			//SetDimLevels();
+
+			// Each button dims up and down it's associated output
+			//Dimmer();
+
+			// use inputs in pairs, first adds a step to output voltage, the next removes it
+			UpDownStepper();
 		}
 	}
 
