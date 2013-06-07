@@ -68,7 +68,7 @@ void SysTick_Handler(void)
 
 // ------------------------------------------------------------------------------------------------------------
 /*!
-    @brief 	SetDimLevels - each push button demands a set dim level from an output
+    @brief 	SetDimLevels - each input demands a set dim level from an output
     		Changes are ramped to instead of jumped.
 
 Setting | Input 0 | Input 1 | 	Input 2 | 	Output 0
@@ -110,6 +110,94 @@ uint16_t topOutputTarget = 0;
 	bottomOutputTarget = DIM_LEVELS[bottomButtons];
 	topOutputTarget = DIM_LEVELS[topButtons];
 
+	// Outputs 0 & 1 ramp towards target, linearly
+
+	if ( bottomOutput > bottomOutputTarget )
+	{
+		bottomOutput --;
+	}
+	else if ( bottomOutput < bottomOutputTarget )
+	{
+		bottomOutput ++;
+	}
+
+	Pwm_SetDuty(BIT0, bottomOutput);
+
+	if ( topOutput > topOutputTarget )
+	{
+		topOutput --;
+	}
+	else if ( topOutput < topOutputTarget )
+	{
+		topOutput ++;
+	}
+
+	Pwm_SetDuty(BIT1, topOutput);
+
+	// Outputs 2 & 3 don't ramp. They just jump to the target
+
+	Pwm_SetDuty(BIT2, bottomOutputTarget);
+	Pwm_SetDuty(BIT3, topOutputTarget);
+
+	Pwm_SetDuty(BIT4, bottomOutputTarget);
+	Pwm_SetDuty(BIT5, topOutputTarget);
+}
+
+
+// ------------------------------------------------------------------------------------------------------------
+/*!
+    @brief 	SetDimLevels - each input transition, high to low demands a set dim level from an output
+    		Changes are ramped to instead of jumped.
+
+	Input 0 = 0v
+	Input 1 = 2.5v
+	Input 2 = 5v
+	Input 3 = 7.5v
+	Input 4 = 10v
+
+*/
+// ------------------------------------------------------------------------------------------------------------
+void SetDimLevels2 ( void )
+{
+static uint16_t bottomOutput = MAX_DIM_DUTY;
+static uint16_t topOutput = MAX_DIM_DUTY;
+static uint16_t bottomOutputTarget = MAX_DIM_DUTY;
+static uint16_t topOutputTarget = MAX_DIM_DUTY;
+uint8_t buttons;
+
+	// First we action any button presses
+	// These update the taget output voltage
+
+	Buttons_GetPressed( &buttons );
+	Buttons_ActionPressed();
+
+	if ( buttons & BIT0 )
+	{
+		bottomOutputTarget = DIM_LEVELS[0];
+		topOutputTarget = DIM_LEVELS[0];
+	}
+	else if ( buttons & BIT1 )
+	{
+		bottomOutputTarget = DIM_LEVELS[1];
+		topOutputTarget = DIM_LEVELS[1];
+	}
+	else if ( buttons & BIT2 )
+	{
+		bottomOutputTarget = DIM_LEVELS[2];
+		topOutputTarget = DIM_LEVELS[2];
+	}
+	else if ( buttons & BIT3 )
+	{
+		bottomOutputTarget = DIM_LEVELS[3];
+		topOutputTarget = DIM_LEVELS[3];
+	}
+	else if ( buttons & BIT4 )
+	{
+		bottomOutputTarget = DIM_LEVELS[4];
+		topOutputTarget = DIM_LEVELS[4];
+	}
+
+	// The next Half will handle getting the outputs to the target
 	// Outputs 0 & 1 ramp towards target, linearly
 
 	if ( bottomOutput > bottomOutputTarget )
@@ -329,11 +417,14 @@ uint8_t i = 0;
 			// Use inputs as dip switches to select the voltage in large steps
 			//SetDimLevels();
 
+			// Use inputs as buttons, each press triggers a set voltage output
+			SetDimLevels2();
+
 			// Each button dims up and down it's associated output
 			//Dimmer();
 
 			// use inputs in pairs, first adds a step to output voltage, the next removes it
-			UpDownStepper();
+			//UpDownStepper();
 		}
 	}
 

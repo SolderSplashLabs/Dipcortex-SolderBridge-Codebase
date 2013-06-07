@@ -9,6 +9,8 @@
 
 #define MAX_DIM_LEVELS 			8
 // These values have been manually calculated, measured max output voltage and scaled that across the PWM resolution.
+
+// Values are for 0v, 2.5v, 5v, 7.5v, 10v ...
 const uint16_t DIM_LEVELS[ MAX_DIM_LEVELS] = {321, 244, 169, 93, 16, 16, 16, 16};
 
 typedef struct DIMMING_STRUCT
