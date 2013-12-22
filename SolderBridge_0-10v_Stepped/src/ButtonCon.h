@@ -88,11 +88,11 @@ typedef struct BUTTONS
 #define BUTTON4_IOCON 		{LPC_IOCON->PIO1_16 = (0 | 1<<5);}
 
 #define BUTTON5_PORT		1
-#define BUTTON5_PIN			29
-#define BUTTON5_MASK		BIT29
+#define BUTTON5_PIN			21
+#define BUTTON5_MASK		BIT21
 
 // Select : PIO, No Pull, Hysteresis
-#define BUTTON5_IOCON		{LPC_IOCON->PIO1_29 = (0 | 1<<5);}
+#define BUTTON5_IOCON		{LPC_IOCON->PIO1_21 = (0 | 1<<5);}
 
 #define BUTTON6_PORT		0
 #define BUTTON6_PIN			12

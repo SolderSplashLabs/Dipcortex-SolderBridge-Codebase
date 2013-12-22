@@ -53,7 +53,7 @@
 
 // -------------------------------------------------------------------------------------------
 // Pwm_Init
-// Initalise the PWM port
+// Initialise the PWM port
 // -------------------------------------------------------------------------------------------
 void Pwm_Init ( void )
 {
@@ -75,34 +75,20 @@ void Pwm_Init ( void )
 	// Interrupt and reset on MR3
 	LPC_CT32B0->MCR = 1<<9 | 1<<10;
 
-	// Interrupt and reset on MR3
-	LPC_CT32B1->MCR = 1<<9 | 1<<10;
+	// Interrupt and reset on B1 - MR2
+	LPC_CT32B1->MCR = 1<<6 | 1<<7;
 
 	Pwm_SetDuty( 0xFF, PWM_DEFAULT_PERIOD /2 );
 
 	// Use MR3 as our Period register
 	LPC_CT32B0->MR3 = PWM_DEFAULT_PERIOD;
-	LPC_CT32B1->MR3 = PWM_DEFAULT_PERIOD;
+	LPC_CT32B1->MR2 = PWM_DEFAULT_PERIOD;
 
 	LPC_CT32B0->PR = PWM_PRESCALE;
 	LPC_CT32B1->PR = PWM_PRESCALE;
 
-
-#ifdef PWM_BIT_BANG_PWM5
-
-	// For the prototype we need to bit bang this pwm channel
-	// Using a free timer match we control the gpio from the interrupt
-
-	LPC_GPIO->DIR[PWM5_PORT] |= PWM5_MASK;
-	LPC_GPIO->CLR[PWM5_PORT] = PWM5_PIN;
-
-	// Enable MR2 interrupt
-	LPC_CT32B1->MCR = LPC_CT32B1->MCR | (1<<6);
-	NVIC_EnableIRQ(TIMER_32_1_IRQn);
-#endif
-
 	LPC_CT32B0->PWMC = 0x0007;
-	LPC_CT32B1->PWMC = 0x0007;
+	LPC_CT32B1->PWMC = 0x000B;
 }
 
 // -------------------------------------------------------------------------------------------
@@ -134,11 +120,7 @@ void Pwm_SetDuty ( uint8_t pwmMask, uint32_t duty )
 
 	if ( pwmMask & BIT4 )
 	{
-		#ifdef PWM_BIT_BANG_PWM5
-			*PWM5_DUTY_REG = duty;
-		#else
-			*PWM5_DUTY_REG = PWM_DEFAULT_PERIOD;
-		#endif
+		*PWM5_DUTY_REG = duty;
 	}
 
 	if ( pwmMask & BIT5 )
@@ -196,7 +178,7 @@ uint8_t mask = 0x01;
 // -------------------------------------------------------------------------------------------
 /*!
     @brief Pwm_DutyStep - Move towards the target duty 1 count at a time
-    // TODO : Allow a varible step size later
+    // TODO : Allow a variable step size later
 */
 // -------------------------------------------------------------------------------------------
 void Pwm_DutyStep ( uint8_t pwmMask, uint32_t targetDuty )
@@ -244,30 +226,6 @@ uint32_t result = 0;
 
 // -------------------------------------------------------------------------------------------
 /*!
-    @brief Timer32-1 Interrupt
-*/
-// -------------------------------------------------------------------------------------------
-void TIMER32_1_IRQHandler(void)
-{
-#ifdef PWM_BIT_BANG_PWM5
-
-	if ( LPC_CT32B1->IR & (0x1<<3) )
-	{
-		// MR3 Interrupt - Clear it down
-		LPC_GPIO->CLR[PWM5_PORT] = PWM5_MASK;
-	}
-	else if ( LPC_CT32B1->IR & (0x1<<2) )
-	{
-		// MR0 Interrupt - Set output high
-		LPC_GPIO->SET[PWM5_PORT] = PWM5_MASK;
-	}
-#endif
-	// Clear all interrupts
-	LPC_CT32B1->IR  = 0xff;
-}
-
-// -------------------------------------------------------------------------------------------
-/*!
     @brief Enable all PWMs
 */
 // -------------------------------------------------------------------------------------------
@@ -276,7 +234,4 @@ void Pwm_On ( void )
 	// GO!
 	LPC_CT32B0->TCR = 1;
 	LPC_CT32B1->TCR = 1;
-#ifdef PWM_BIT_BANG_PWM5
-	LPC_CT32B1->IR = 0xff;
-#endif
 }
